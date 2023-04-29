@@ -16,7 +16,10 @@ export function AddItem() {
       snapshotListenOptions: { includeMetadataChanges: true },
     }
   );
-  const formattedData = formatCollectionData(value);
+  const formattedData = value
+    ? [{ title: "" }, ...formatCollectionData(value)]
+    : null;
+  const [categoryError, setCategoryError] = useState(null);
   const [file, setFile] = useState(null);
   const [fileUploadError, setFileUploadError] = useState(null);
   const [fileDataURL, setFileDataURL] = useState(null);
@@ -31,7 +34,7 @@ export function AddItem() {
       title: "",
       price: 0,
       description: "",
-      category: formattedData?.[0]?.title,
+      category: "",
     },
     validationSchema: validation_schema_food_items,
     onSubmit: onSubmit,
@@ -61,41 +64,42 @@ export function AddItem() {
   //
 
   async function onSubmit(values, actions) {
-    console.log(values.category);
-    // const collection_ref = collection(db, COLLECTIONS.food_items);
-    // setFileUploadError(null);
-    // setStatus((prev) => ({ ...prev, loading: true }));
-    // if (!file) {
-    //   setStatus((prev) => ({ ...prev, loading: false }));
-    //   setFileUploadError(`File is required.`);
-    //   return;
-    // }
-    // try {
-    //   const foodItemStorageRef = ref(
-    //     storage,
-    //     food_items_storage_path(file.name)
-    //   );
-    //   await uploadBytes(foodItemStorageRef, file).then((snapshot) => {
-    //     getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-    //       await addDoc(collection_ref, {
-    //         ...values,
-    //         timestamp: serverTimestamp(),
-    //         imageURL: downloadURL,
-    //       });
-    //     });
-    //   });
-    //   // setStatus(prev=>({...prev,loading:false,error:null}))
-    // } catch (e) {
-    //   setStatus((prev) => ({
-    //     ...prev,
-    //     loading: false,
-    //     error: `Error adding the item.`,
-    //   }));
-    // } finally {
-    //   reset(actions);
-    //   updateModalStatus(null, false);
-    //   setStatus((prev) => ({ ...prev, loading: false, error: null }));
-    // }
+    if (!values.category) return alert("Category is required.");
+    console.log(values);
+    const collection_ref = collection(db, COLLECTIONS.food_items);
+    setFileUploadError(null);
+    setStatus((prev) => ({ ...prev, loading: true }));
+    if (!file) {
+      setStatus((prev) => ({ ...prev, loading: false }));
+      setFileUploadError(`File is required.`);
+      return;
+    }
+    try {
+      const foodItemStorageRef = ref(
+        storage,
+        food_items_storage_path(file.name)
+      );
+      await uploadBytes(foodItemStorageRef, file).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+          await addDoc(collection_ref, {
+            ...values,
+            timestamp: serverTimestamp(),
+            imageURL: downloadURL,
+          });
+        });
+      });
+      // setStatus(prev=>({...prev,loading:false,error:null}))
+    } catch (e) {
+      setStatus((prev) => ({
+        ...prev,
+        loading: false,
+        error: `Error adding the item.`,
+      }));
+    } finally {
+      reset(actions);
+      updateModalStatus(null, false);
+      setStatus((prev) => ({ ...prev, loading: false, error: null }));
+    }
   }
   const setImage = (e) => {
     setFile(e.target.files[0]);
@@ -104,7 +108,8 @@ export function AddItem() {
     setFile(null);
     setFileUploadError(null);
     setFileDataURL(null);
-    actions.resetForm({ title: "", price: 0 });
+    actions.resetForm({ title: "", price: 0, description: "", category: "" });
+    setCategoryError(null);
   };
   return (
     <div>
@@ -199,6 +204,9 @@ export function AddItem() {
                     <option value={title}>{title}</option>
                   ))}
                 </select>
+                {categoryError && (
+                  <p className="my-2">{formik.errors.description}</p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">

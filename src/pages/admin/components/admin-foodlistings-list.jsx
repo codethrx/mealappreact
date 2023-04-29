@@ -13,6 +13,7 @@ export function AdminFoodlistings() {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
   const formattedData = formatCollectionData(value);
+  console.table(formattedData);
   const { updateModalStatus } = useCtx();
   if (error) return <h1>Error fetching items..</h1>;
   if (loading)

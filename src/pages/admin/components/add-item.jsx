@@ -87,6 +87,7 @@ export function AddItem() {
           });
         });
       });
+      updateModalStatus(null, false);
       // setStatus(prev=>({...prev,loading:false,error:null}))
     } catch (e) {
       setStatus((prev) => ({
@@ -94,10 +95,9 @@ export function AddItem() {
         loading: false,
         error: `Error adding the item.`,
       }));
+      updateModalStatus(null, false);
     } finally {
       reset(actions);
-      updateModalStatus(null, false);
-      setStatus((prev) => ({ ...prev, loading: false, error: null }));
     }
   }
   const setImage = (e) => {

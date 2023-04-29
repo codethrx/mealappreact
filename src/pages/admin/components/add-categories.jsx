@@ -1,12 +1,26 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useFormik } from "formik";
 import { validation_schema_food_categories } from "../../../utils/validation_schema";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { COLLECTIONS } from "../../../utils/firestore-collections";
 import { db } from "../../../config/@firebase";
 import { useCtx } from "../../../context/Ctx";
 export function AddCategories() {
   const { updateModalStatus } = useCtx();
+  // React.useEffect(() => {
+
+  //     .then((docs) =>
+  //       console.log(docs.docs.map((d) => ({ ...d.data(), slug: d.id })))
+  //     )
+  //     .catch((e) => console.log(e));
+  // }, []);
   //Form Data
   const formik = useFormik({
     initialValues: {
@@ -21,7 +35,27 @@ export function AddCategories() {
     setStatus((prev) => ({ ...prev, loading: true }));
 
     try {
-      await addDoc(collection_ref, { ...values, timestamp: serverTimestamp() });
+      const category_exist = await getDocs(
+        query(
+          collection(db, COLLECTIONS.categories),
+          where("title", "==", values.title)
+        )
+      );
+
+      if (category_exist.docs.length >= 1) {
+        setStatus({
+          ...status,
+          loading: false,
+          error: "Category already exists.",
+        });
+        return;
+      } else {
+        await addDoc(collection_ref, {
+          ...values,
+          timestamp: serverTimestamp(),
+        });
+        updateModalStatus(false, null);
+      }
     } catch (e) {
       setStatus((prev) => ({
         ...prev,
@@ -30,12 +64,10 @@ export function AddCategories() {
       }));
     } finally {
       reset(actions);
-      setStatus((prev) => ({ ...prev, loading: false, error: null }));
-      updateModalStatus(false, null);
     }
   }
   const reset = (actions) => {
-    actions.resetForm({ title: "", price: 0 });
+    actions.resetForm({ title: "" });
   };
   return (
     <div>
@@ -61,6 +93,7 @@ export function AddCategories() {
             )}
           </div>
         </div>
+        {status.error && <p>{status.error}</p>}
         <div>
           <button
             type="submit"

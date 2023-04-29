@@ -15,6 +15,7 @@ export function AdminCategoryListings() {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
   const formattedData = formatCollectionData(value);
+
   if (error) return <h1>Error fetching items..</h1>;
   if (loading)
     return <h1 className="text-bold text-center text-2xl">Loading...</h1>;

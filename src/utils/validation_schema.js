@@ -4,7 +4,6 @@ export const validation_schema_form = Yup.object({
     .email("Please provide a valid email address")
     .required("Email is required"),
   password: Yup.string().required("Password is required."),
-  category: Yup.array().required("Terms of service must be checked"),
 });
 
 export const validation_schema_food_items = Yup.object({
@@ -13,6 +12,7 @@ export const validation_schema_food_items = Yup.object({
   price: Yup.number("Price is required and must be a positive number.")
     .required("Price is required and must be a positive number.")
     .positive("Price is required and must be a positive number."),
+  category: Yup.string().required("Select a category"),
 });
 export const validation_schema_food_categories = Yup.object({
   title: Yup.string().required("Title is required."),

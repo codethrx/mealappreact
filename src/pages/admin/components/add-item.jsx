@@ -64,8 +64,7 @@ export function AddItem() {
   //
 
   async function onSubmit(values, actions) {
-    if (!values.category) return alert("Category is required.");
-    console.log(values);
+    console.log("Added");
     const collection_ref = collection(db, COLLECTIONS.food_items);
     setFileUploadError(null);
     setStatus((prev) => ({ ...prev, loading: true }));
@@ -201,11 +200,15 @@ export function AddItem() {
                   onBlur={formik.handleBlur}
                 >
                   {formattedData?.map(({ title }) => (
-                    <option value={title}>{title}</option>
+                    <option key={title} value={title}>
+                      {title}
+                    </option>
                   ))}
                 </select>
-                {categoryError && (
-                  <p className="my-2">{formik.errors.description}</p>
+                {formik.touched.category && formik.errors.category ? (
+                  <p className="my-2">{formik.errors.category}</p>
+                ) : (
+                  ""
                 )}
               </div>
 

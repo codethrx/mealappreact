@@ -11,6 +11,7 @@ import { ProtectedRoute } from "../components/reusables/protected_route";
 
 export function Router() {
   const [user, loading, error] = useAuthState(auth);
+
   return (
     <div>
       <Routes>

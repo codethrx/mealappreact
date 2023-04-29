@@ -24,6 +24,7 @@ export const LoginAdmin = () => {
     validationSchema: validation_schema_form,
     onSubmit: onSubmit,
   });
+
   async function onSubmit(values) {
     setStatus((prev) => ({ ...prev, loading: true }));
     try {
@@ -39,7 +40,7 @@ export const LoginAdmin = () => {
         navigate(admin);
       }
     } catch (error) {
-      // console.log(error?.message);
+      console.log(error?.message);
       setStatus((prev) => ({
         ...prev,
         loading: false,

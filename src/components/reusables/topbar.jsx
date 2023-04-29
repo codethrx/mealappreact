@@ -3,10 +3,13 @@ import { ROUTES } from "../../utils/routes";
 import { auth } from "../../config/@firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useCtx } from "../../context/Ctx";
 export function TopBar({ showNav, setShowNav }) {
+  const { setAuthenticatedUser } = useCtx();
   const navigate = useNavigate();
   const logout_user = async () => {
     await signOut(auth);
+    setAuthenticatedUser(null);
     navigate(ROUTES.login_admin);
   };
 

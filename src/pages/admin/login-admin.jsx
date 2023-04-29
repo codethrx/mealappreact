@@ -8,7 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { COLLECTIONS } from "../../utils/firestore-collections";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { validation_schema_form } from "../../utils/validation_schema";
+import { useCtx } from "../../context/Ctx";
 export const LoginAdmin = () => {
+  const { setAuthenticatedUser } = useCtx();
   const { admin } = ROUTES;
   const navigate = useNavigate();
   const [status, setStatus] = React.useState({
@@ -36,6 +38,7 @@ export const LoginAdmin = () => {
       const userDocument =
         user && (await getDoc(doc(db, COLLECTIONS.users, user?.user?.uid)));
       if (userDocument.data().role === ROLES.ADMIN) {
+        setAuthenticatedUser({ ...user, ...userDocument });
         setStatus((prev) => ({ ...prev, loading: false, error: null }));
         navigate(admin);
       }

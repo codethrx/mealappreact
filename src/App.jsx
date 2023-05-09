@@ -1,11 +1,8 @@
 //router
-import { Router } from "./pages/Router"
-import { Navbar } from "./components/reusables/navbar";
+import { Router } from "./pages/Router";
+
 function App() {
- 
-  return (<div>
-    <Router/>
-  </div>)
+  return <Router />;
 }
 
-export default App
+export default App;

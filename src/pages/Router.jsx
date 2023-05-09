@@ -1,70 +1,94 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-//importing components
-import { Admin } from "./admin/admin";
-import { LoginAdmin } from "./admin/login-admin";
-import { FoodListings } from "./food-listings/food-listings";
+
 //utils
 import { ROUTES } from "../utils/routes";
-import { auth } from "../config/@firebase";
+
 import { useAuthState } from "react-firebase-hooks/auth";
-import { ProtectedRoute } from "../components/reusables/protected_route";
-import { useCallback, useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { COLLECTIONS } from "../utils/firestore-collections";
-import { db } from "../config/@firebase";
+
+import { useCtx, LOCAL_STORAGE_BASE } from "../context/Ctx";
+//Manager
+import { Manager } from "./manager";
+//Waiter
+import { Waiter } from "./waiter";
+//admin
+import { Admin } from "./admin";
+import { Login } from "../components/login";
+import { RequireAuth } from "../components/protectedroute";
 import { ROLES } from "../utils/roles";
-import { useCtx } from "../context/Ctx";
+import RolesComponent from "../components/roles";
 export function Router() {
-  const [user, loading, error] = useAuthState(auth);
-  const { authenticatedUser, authStatus } = useCtx();
-  console.log(authenticatedUser);
-
+  const { authStatus, authenticatedUser } = useCtx();
+  console.log(ROUTES.waiter);
   return (
-    <div>
+    <>
       {authStatus && (
-        <div>
-          <Routes>
-            <Route
-              path={ROUTES.default}
-              element={<Navigate to={ROUTES.foodListings} />}
-            />
-            <Route path={ROUTES.foodListings} element={<FoodListings />} />
-            <Route
-              path={ROUTES.admin}
-              element={
-                loading ? (
-                  <h1>Loading..</h1>
-                ) : (
-                  <ProtectedRoute>
-                    {user?.uid ? (
-                      <Admin />
-                    ) : (
-                      <Navigate to={ROUTES.login_admin} />
-                    )}
-                  </ProtectedRoute>
-                )
-              }
-            />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to={
+                  !authenticatedUser && !authenticatedUser?.role
+                    ? `/select_role`
+                    : `/${authenticatedUser?.role?.toLowerCase()}`
+                }
+              />
+            }
+          />
+          <Route
+            element={
+              !authenticatedUser && !authenticatedUser?.role ? (
+                <Login url={ROUTES.admin} type={"Admin"} />
+              ) : (
+                <Navigate to={ROUTES.admin} />
+              )
+            }
+            path={ROUTES.login_admin}
+          />
 
-            <Route
-              path={ROUTES.login_admin}
-              element={
-                <ProtectedRoute loading={loading} error={error}>
-                  {!user?.uid ? (
-                    <LoginAdmin />
-                  ) : (
-                    <Navigate to={ROUTES.admin} replace />
-                  )}
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={ROUTES.all}
-              element={<Navigate to={ROUTES.foodListings} />}
-            />
-          </Routes>
-        </div>
+          <Route
+            element={
+              !authenticatedUser && !authenticatedUser?.role ? (
+                <Login url={ROUTES.manager} type={"Manager"} />
+              ) : (
+                <Navigate to={ROUTES.manager} />
+              )
+            }
+            path={ROUTES.login_manager}
+          />
+          <Route
+            element={
+              !authenticatedUser && !authenticatedUser?.role ? (
+                <Login url={ROUTES.waiter} type={"Waiter"} />
+              ) : (
+                <Navigate to={ROUTES.waiter} />
+              )
+            }
+            path={ROUTES.login_waiter}
+          />
+          <Route element={<h1>Unauthorized</h1>} path="/unauthorized" />
+          <Route
+            element={
+              !authenticatedUser && !authenticatedUser?.role ? (
+                <RolesComponent />
+              ) : (
+                <Navigate to={`/${authenticatedUser?.role?.toLowerCase()}`} />
+              )
+            }
+            path="/select_role"
+          />
+
+          <Route element={<RequireAuth roles={[ROLES.ADMIN]} />}>
+            <Route element={<Admin />} path={ROUTES.admin}></Route>
+          </Route>
+          <Route element={<RequireAuth roles={[ROLES.MANAGER]} />}>
+            <Route element={<Manager />} path={ROUTES.manager} />
+          </Route>
+          <Route element={<RequireAuth roles={[ROLES.WAITER]} />}>
+            <Route element={<Waiter />} path={ROUTES.waiter} />
+          </Route>
+        </Routes>
       )}
-    </div>
+    </>
   );
 }

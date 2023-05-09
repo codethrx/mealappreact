@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useFormik } from "formik";
 import { validation_schema_form } from "../utils/validation_schema";
 import { COLLECTIONS } from "../utils/firestore-collections";
-import { getDoc, doc } from "firebase/firestore";
+import { where, getDocs, query, collection } from "firebase/firestore";
 import { db, auth } from "../config/@firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
 import { useCtx, LOCAL_STORAGE_BASE } from "../context/Ctx";
@@ -31,22 +31,30 @@ export function Login({ url, type }) {
         values.email,
         values.password
       );
-      const userData = await getDoc(doc(db, COLLECTIONS.users, user.user.uid));
-      const formattedUserData = { ...userData.data(), id: userData.id };
-      if (formattedUserData?.role !== type.toUpperCase()) {
+      console.log(COLLECTIONS.users);
+      const userData = await getDocs(
+        query(
+          collection(db, COLLECTIONS.users),
+          where("userId", "==", user.user.uid)
+        )
+      );
+      const formattedUserData = formatCollectionData(userData);
+      console.log(formattedUserData);
+      if (formattedUserData?.[0]?.role !== type.toUpperCase()) {
         setStatus({ error: "User doesnot exists", loading: false });
         return;
       }
       localStorage.setItem(
         `${LOCAL_STORAGE_BASE}Data`,
-        JSON.stringify(formattedUserData)
+        JSON.stringify(formattedUserData[0])
       );
-      setAuthenticatedUser(formattedUserData);
+      setAuthenticatedUser(formattedUserData[0]);
       setStatus({
         loading: false,
         error: null,
       });
-      navigate(url);
+
+      // navigate(url);
     } catch (e) {
       console.log(e?.message);
       setStatus({

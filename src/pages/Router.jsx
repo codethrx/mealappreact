@@ -18,11 +18,21 @@ import { ROLES } from "../utils/roles";
 import RolesComponent from "../components/roles";
 export function Router() {
   const { authStatus, authenticatedUser } = useCtx();
-  console.log(ROUTES.waiter);
+  console.log(authenticatedUser);
   return (
     <>
       {authStatus && (
         <Routes>
+          <Route
+            element={
+              !authenticatedUser && !authenticatedUser?.role ? (
+                <Login url={ROUTES.admin} type={"Admin"} />
+              ) : (
+                <Navigate to={ROUTES.admin} />
+              )
+            }
+            path={ROUTES.login_admin}
+          />
           <Route
             path="/"
             element={
@@ -35,6 +45,7 @@ export function Router() {
               />
             }
           />
+
           <Route
             element={
               !authenticatedUser && !authenticatedUser?.role ? (
@@ -67,6 +78,7 @@ export function Router() {
             path={ROUTES.login_waiter}
           />
           <Route element={<h1>Unauthorized</h1>} path="/unauthorized" />
+
           <Route
             element={
               !authenticatedUser && !authenticatedUser?.role ? (
@@ -77,10 +89,10 @@ export function Router() {
             }
             path="/select_role"
           />
-
           <Route element={<RequireAuth roles={[ROLES.ADMIN]} />}>
             <Route element={<Admin />} path={ROUTES.admin}></Route>
           </Route>
+
           <Route element={<RequireAuth roles={[ROLES.MANAGER]} />}>
             <Route element={<Manager />} path={ROUTES.manager} />
           </Route>

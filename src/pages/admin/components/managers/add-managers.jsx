@@ -9,7 +9,9 @@ import {
   where,
   doc,
   setDoc,
+  addDoc,
 } from "firebase/firestore";
+
 import { COLLECTIONS } from "../../../../utils/firestore-collections";
 import { db, auth } from "../../../../config/@firebase";
 import { useCtx } from "../../../../context/Ctx";
@@ -17,7 +19,7 @@ import { createUserWithEmailAndPassword } from "@firebase/auth";
 import { ROLES } from "../../../../utils/roles";
 export function AdminAddManagers() {
   const [status, setStatus] = useState({ loading: false, error: null });
-  const { updateModalStatus } = useCtx();
+  const { updateModalStatus, authenticatedUser } = useCtx();
 
   //Form Data
   const formik = useFormik({
@@ -55,10 +57,11 @@ export function AdminAddManagers() {
         values.password
       );
 
-      await setDoc(doc(db, COLLECTIONS.users, createdUser.user.uid), {
+      await addDoc(collection(db, COLLECTIONS.users), {
         ...values,
         role: ROLES.MANAGER,
         timestamp: serverTimestamp(),
+        managerId: createdUser.user.uid,
       });
       setStatus({ error: null, loading: false });
       updateModalStatus(false, null);
